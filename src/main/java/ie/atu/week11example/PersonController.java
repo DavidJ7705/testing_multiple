@@ -9,9 +9,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class PersonController {
     private final PersonService personService;
+    private final PaymentClient paymentClient;
+    private final LoginClient loginClient;
 
-    public PersonController(PersonService personService) {
+    public PersonController(PersonService personService, PaymentClient paymentClient, LoginClient loginClient) {
         this.personService = personService;
+        this.paymentClient = paymentClient;
+        this.loginClient = loginClient;
     }
 
     @GetMapping("/{employeeId}")
@@ -25,6 +29,8 @@ public class PersonController {
         if (person == null) {
             return ResponseEntity.notFound().build();
         }
+        String details = loginClient.makeLogin(person);
+        System.out.println(details);
 
         return ResponseEntity.ok(person);
     }
@@ -32,6 +38,9 @@ public class PersonController {
     @PostMapping("/createPerson")
     public ResponseEntity<String>create(@Valid @RequestBody Person person) {
         personService.savePerson(person);
+        String details = paymentClient.makePayment(person);
+        System.out.println(details);
+
         return new ResponseEntity<>("Person created successfully", HttpStatus.OK);
     }
 }
